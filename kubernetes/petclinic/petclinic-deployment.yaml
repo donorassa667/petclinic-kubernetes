@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: petclinic
   namespace: petclinic
+  labels:
+    app: petclinic
 spec:
   replicas: 2
   selector:
@@ -13,13 +15,17 @@ spec:
       labels:
         app: petclinic
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
         - name: petclinic
           image: petclinic:1.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-
+              name: http
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "mysql" 
           envFrom:
             - configMapRef:
                 name: petclinic-config
@@ -40,6 +46,8 @@ spec:
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
 
           livenessProbe:
             httpGet:
@@ -47,3 +55,12 @@ spec:
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          startupProbe:  
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 10
