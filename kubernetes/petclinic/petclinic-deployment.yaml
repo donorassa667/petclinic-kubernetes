@@ -1,10 +1,9 @@
+# kubernetes/petclinic/petclinic-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: petclinic
   namespace: petclinic
-  labels:
-    app: petclinic
 spec:
   replicas: 2
   selector:
@@ -15,23 +14,28 @@ spec:
       labels:
         app: petclinic
     spec:
-      terminationGracePeriodSeconds: 30
       containers:
         - name: petclinic
           image: petclinic:1.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-              name: http
           env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: "mysql" 
+            # Injection explicite des credentials MySQL (REQUIS pour Spring Boot)
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
           envFrom:
+            # Charger le reste de la config (URL, profil) depuis ConfigMap
             - configMapRef:
                 name: petclinic-config
-            - secretRef:
-                name: mysql-secret
-
           resources:
             requests:
               cpu: "250m"
@@ -39,28 +43,15 @@ spec:
             limits:
               cpu: "500m"
               memory: "1Gi"
-
           readinessProbe:
             httpGet:
-              path: /actuator/health/readiness
+              path: /actuator/health
               port: 8080
-            initialDelaySeconds: 30
+            initialDelaySeconds: 40
             periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
-
           livenessProbe:
             httpGet:
-              path: /actuator/health/liveness
+              path: /actuator/health
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 20
-            timeoutSeconds: 5
-            failureThreshold: 3
-
-          startupProbe:  
-            httpGet:
-              path: /actuator/health/readiness
-              port: 8080
-            failureThreshold: 30
-            periodSeconds: 10

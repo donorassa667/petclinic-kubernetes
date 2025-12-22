@@ -1,3 +1,4 @@
+# kubernetes/mysql/mysql-statefulset.yaml
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -19,9 +20,28 @@ spec:
           image: mysql:8.0
           ports:
             - containerPort: 3306
-          envFrom:
-            - secretRef:
-                name: mysql-secret
+          env:
+            # Utilisation du Secret pour injecter les credentials
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_DATABASE
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
           volumeMounts:
             - name: mysql-storage
               mountPath: /var/lib/mysql
