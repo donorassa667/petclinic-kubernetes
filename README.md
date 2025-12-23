@@ -24,7 +24,7 @@ Ce projet a pour but de démontrer la maîtrise des concepts fondamentaux de **D
   * Ports ouverts dans le Security Group :
 
     * `22/TCP` (SSH)
-    * `30080/TCP` (NodePort)
+    * `8080/TCP` (NodePort)
     * `80/TCP` (Ingress)
 
 ### Logiciels installés sur l’EC2

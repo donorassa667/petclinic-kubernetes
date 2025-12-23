@@ -13,7 +13,7 @@ Ce document décrit **pas à pas** comment déployer l’application **Spring Pe
 * Ouvrir les ports suivants dans le Security Group :
 
   * `22/TCP` (SSH)
-  * `30080/TCP` (NodePort)
+  * `8080/TCP` (NodePort)
   * `80/TCP` (Ingress)
 
 Connexion SSH :
