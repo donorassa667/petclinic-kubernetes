@@ -114,17 +114,36 @@ http://petclinic.local
 ```
 petclinic-kubernetes/
 ├── README.md
-├── docs/
-│   ├── architecture.md
-│   └── screenshots/
 ├── docker/
-│   └── Dockerfile
+│ └── Dockerfile
+├── docs/
+│ ├── architecture.md
+│ ├── architecture.svg
+│ ├── deployment-guide.md
+│ └── screenshots/
+│ ├── app-running.png
+│ ├── monitoring-pods.png
+│ ├── monitoring-workload-status.png
+│ └── pods-list.png
 ├── kubernetes/
-│   ├── namespace.yaml
-│   ├── mysql/
-│   ├── petclinic/
-│   └── ingress/
-└── scripts/
+│ ├── namespace.yaml
+│ ├── ingress/
+│ │ └── petclinic-ingress.yaml
+│ ├── mysql/
+│ │ ├── mysql-pvc.yaml
+│ │ ├── mysql-secret.yaml
+│ │ ├── mysql-service.yaml
+│ │ └── mysql-statefulset.yaml
+│ └── petclinic/
+│ ├── petclinic-configmap.yaml
+│ ├── petclinic-deployment.yaml
+│ ├── petclinic-hpa.yaml
+│ └── petclinic-service.yaml
+├── scripts/
+│ ├── build.sh
+│ ├── cleanup.sh
+│ ├── deploy.sh
+│ └── restart-minikube.sh
 ```
 
 ---
