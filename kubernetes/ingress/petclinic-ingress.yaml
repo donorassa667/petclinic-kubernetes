@@ -10,7 +10,7 @@ spec:
   ingressClassName: nginx
   rules:
   #- host: petclinic.local
-    http:
+  - http:
       paths:
       - path: /
         pathType: Prefix
