@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: petclinic.local
+  #- host: petclinic.local
     http:
       paths:
       - path: /
