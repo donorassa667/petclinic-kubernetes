@@ -6,7 +6,7 @@ Ce projet déploie l'application [Spring PetClinic](https://github.com/spring-pr
 
 > 💡 **Version Minikube archivée**
 > La version précédente avec Minikube est conservée dans la branche
-> 👉 `minikube-final`
+> 👉 [`minikube-final`](https://github.com/donorassa667/petclinic-kubernetes/tree/minikube-final)
 
 ---
 
@@ -56,7 +56,7 @@ Docker · Kubernetes · AWS · EKS · IAM · ECR · CSI Driver · Cloud-Native A
 ### 1️⃣ Cloner le projet
 
 ```bash
-git clone https://github.com/votre-nom/petclinic-kubernetes.git
+git clone https://github.com/donorassa667/petclinic-kubernetes.git
 cd petclinic-kubernetes
 ```
 

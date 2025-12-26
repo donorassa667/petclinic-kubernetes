@@ -84,7 +84,7 @@ Renseigner :
 ### 3.1 Cloner le projet
 
 ```bash
-git clone https://github.com/votre-nom/petclinic-kubernetes.git
+git clone https://github.com/donorassa667/petclinic-kubernetes.git
 cd petclinic-kubernetes
 ```
 
