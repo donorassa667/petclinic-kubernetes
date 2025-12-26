@@ -33,10 +33,13 @@ eksctl create cluster \
   --ssh-public-key "$SSH_KEY_NAME" \
   --managed
 
-# === 2. INSTALLER LE CSI DRIVER EBS ===
+# === 2. INSTALLER LE CSI DRIVER EBS (SANS CONFLIT HELM/SA) ===
 echo "🔧 Installation du CSI driver EBS..."
+
+# Associer OIDC
 eksctl utils associate-iam-oidc-provider --cluster $CLUSTER_NAME --region $REGION --approve
 
+# Créer le rôle IAM (mais ne PAS créer le ServiceAccount ici)
 eksctl create iamserviceaccount \
   --name ebs-csi-controller-sa \
   --namespace kube-system \
@@ -44,24 +47,30 @@ eksctl create iamserviceaccount \
   --role-name "$CLUSTER_NAME-ebs-csi-role" \
   --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
   --approve \
-  --region $REGION
+  --region $REGION \
+  --override-existing-serviceaccounts  # <-- Force la mise à jour si nécessaire
 
-helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
-helm repo update
+# Supprimer tout ServiceAccount existant pour éviter conflit Helm
+kubectl delete serviceaccount ebs-csi-controller-sa -n kube-system 2>/dev/null || true
+
+# Installer le CSI driver avec création auto du SA par Helm
+helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver &>/dev/null
+helm repo update &>/dev/null
 helm upgrade --install aws-ebs-csi-driver \
   --namespace kube-system \
+  --create-namespace \
   aws-ebs-csi-driver/aws-ebs-csi-driver \
-  --set controller.serviceAccount.name=ebs-csi-controller-sa \
-  --set node.serviceAccount.name=ebs-csi-controller-sa
+  --set controller.serviceAccount.create=true \
+  --set node.serviceAccount.create=true \
+  --set controller.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="arn:aws:iam::$ACCOUNT_ID:role/$CLUSTER_NAME-ebs-csi-role" \
+  --set node.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="arn:aws:iam::$ACCOUNT_ID:role/$CLUSTER_NAME-ebs-csi-role"
 
 # === 3. CRÉER LE REPO ECR ET POUSSER L'IMAGE ===
 echo "📦 Build et push de l'image PetClinic vers ECR..."
 aws ecr create-repository --repository-name $REPO_NAME --region $REGION >/dev/null 2>&1 || true
 aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_URI
 
-# Construire l'image (suppose que le Dockerfile est dans ./docker)
 docker build -t petclinic:$IMAGE_TAG -f docker/Dockerfile .
-
 docker tag petclinic:$IMAGE_TAG $ECR_URI/$REPO_NAME:$IMAGE_TAG
 docker push $ECR_URI/$REPO_NAME:$IMAGE_TAG
 
@@ -74,21 +83,12 @@ sed -i "s|imagePullPolicy: IfNotPresent|imagePullPolicy: Always|" kubernetes/pet
 echo "🚀 Déploiement de PetClinic..."
 kubectl apply -f kubernetes/namespace.yaml
 
-# MySQL
-kubectl apply -f kubernetes/mysql/mysql-secret.yaml
-kubectl apply -f kubernetes/mysql/mysql-pvc.yaml    # doit utiliser storageClassName: gp2
-kubectl apply -f kubernetes/mysql/mysql-statefulset.yaml
-
+kubectl apply -f kubernetes/mysql/
 echo "⏳ Attente de MySQL (max 5 min)..."
 kubectl wait --for=condition=ready pod/mysql-0 -n $NAMESPACE --timeout=300s
 
-# PetClinic
 kubectl apply -f kubernetes/petclinic/
-
-# Ingress
 kubectl apply -f kubernetes/ingress/petclinic-ingress.yaml
-
-# ingress-nginx
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/aws/deploy.yaml
 
 echo "⏳ Attente de l'Ingress (max 2 min)..."
