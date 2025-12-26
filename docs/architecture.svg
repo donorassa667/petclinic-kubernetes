@@ -1,76 +1,115 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" font-family="sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="750" style="background:#ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
   <!-- Titre -->
-  <text x="450" y="40" text-anchor="middle" font-size="20" font-weight="bold">Architecture PetClinic sur Minikube (EC2)</text>
+  <text x="450" y="40" text-anchor="middle" fill="#333333" font-size="22" font-weight="bold">Architecture Spring PetClinic sur AWS EKS</text>
+  <text x="450" y="65" text-anchor="middle" fill="#666666" font-size="14">Déploiement cloud-native avec composants AWS</text>
 
-  <!-- Machine locale -->
-  <rect x="50" y="80" width="180" height="120" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  <text x="140" y="110" text-anchor="middle" font-weight="bold">Machine locale</text>
-  <text x="140" y="135" text-anchor="middle">Navigateur</text>
-  <text x="140" y="155" text-anchor="middle">SSH Client</text>
-  <text x="140" y="175" text-anchor="middle">/etc/hosts → petclinic.local</text>
+  <!-- Internet Utilisateur -->
+  <ellipse cx="450" cy="110" rx="100" ry="40" fill="#4a90e2" stroke="#2c5aa0" stroke-width="2"/>
+  <text x="450" y="115" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="bold">Client<br/></text>
 
-  <!-- Flèche vers EC2 -->
-  <line x1="230" y1="140" x2="320" y2="140" stroke="#333" marker-end="url(#arrow)"/>
-  <text x="275" y="130" text-anchor="middle" font-size="12">HTTP / SSH</text>
+  <!-- Flèche vers LoadBalancer -->
+  <line x1="450" y1="150" x2="450" y2="180" stroke="#333333" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="450" y="170" text-anchor="middle" fill="#666666" font-size="10">HTTPS/HTTP</text>
 
-  <!-- EC2 Instance -->
-  <rect x="320" y="60" width="530" height="480" rx="15" fill="#f5f5f5" stroke="#666" stroke-width="2" stroke-dasharray="5,5"/>
-  <text x="585" y="90" text-anchor="middle" font-weight="bold" fill="#333">Instance EC2 (AWS)</text>
+  <!-- AWS Load Balancer (Ingress Nginx) -->
+  <rect x="350" y="180" width="200" height="70" rx="10" fill="#66bb6a" stroke="#2e7d32" stroke-width="2"/>
+  <text x="450" y="205" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="bold">AWS Load Balancer</text>
+  <text x="450" y="225" text-anchor="middle" fill="#ffffff" font-size="12">Ingress Nginx Controller</text>
+  <text x="450" y="240" text-anchor="middle" fill="#ffffff" font-size="10">Type: LoadBalancer</text>
 
-  <!-- Minikube -->
-  <rect x="350" y="120" width="470" height="400" rx="12" fill="#fff8e1" stroke="#ffa000" stroke-width="2"/>
-  <text x="585" y="150" text-anchor="middle" font-weight="bold" fill="#e65100">Minikube Cluster</text>
-
-  <!-- Ingress -->
-  <rect x="400" y="180" width="140" height="60" rx="8" fill="#c8e6c9" stroke="#388e3c" stroke-width="1.5"/>
-  <text x="470" y="205" text-anchor="middle" font-weight="bold">Ingress</text>
-  <text x="470" y="225" text-anchor="middle" font-size="12">petclinic.local</text>
-
-  <!-- Service -->
-  <rect x="580" y="180" width="140" height="60" rx="8" fill="#ffecb3" stroke="#ef6c00" stroke-width="1.5"/>
-  <text x="650" y="205" text-anchor="middle" font-weight="bold">Service</text>
-  <text x="650" y="225" text-anchor="middle" font-size="12">petclinic:80</text>
-
-  <!-- Flèche Ingress → Service -->
-  <line x1="540" y1="210" x2="580" y2="210" stroke="#333" marker-end="url(#arrow)"/>
+  <!-- EKS Cluster (Conteneur) -->
+  <rect x="100" y="260" width="700" height="430" rx="15" fill="none" stroke="#999999" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="450" y="280" text-anchor="middle" fill="#666666" font-size="12">Amazon EKS Cluster (eu-north-1)</text>
 
   <!-- PetClinic Pods -->
-  <rect x="400" y="270" width="320" height="80" rx="8" fill="#e8eaf6" stroke="#3f51b5" stroke-width="1.5"/>
-  <text x="560" y="295" text-anchor="middle" font-weight="bold">PetClinic Pods (Deployment)</text>
-  <text x="560" y="315" text-anchor="middle" font-size="12">2-5 replicas • HPA • Port 30080</text>
+  <rect x="150" y="300" width="200" height="80" rx="10" fill="#ff6b6b" stroke="#d32f2f" stroke-width="2"/>
+  <text x="250" y="320" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="bold">Pod: PetClinic-1</text>
+  <text x="250" y="340" text-anchor="middle" fill="#ffffff" font-size="12">Image: ECR</text>
+  <text x="250" y="355" text-anchor="middle" fill="#ffffff" font-size="10">Port: 8080</text>
 
-  <!-- Flèche Service → Pods -->
-  <line x1="650" y1="240" x2="650" y2="270" stroke="#333" marker-end="url(#arrow)"/>
+  <rect x="550" y="300" width="200" height="80" rx="10" fill="#ff6b6b" stroke="#d32f2f" stroke-width="2"/>
+  <text x="650" y="320" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="bold">Pod: PetClinic-2</text>
+  <text x="650" y="340" text-anchor="middle" fill="#ffffff" font-size="12">Image: ECR</text>
+  <text x="650" y="355" text-anchor="middle" fill="#ffffff" font-size="10">Port: 8080</text>
 
-  <!-- MySQL -->
-  <rect x="400" y="380" width="320" height="80" rx="8" fill="#ffebee" stroke="#d32f2f" stroke-width="1.5"/>
-  <text x="560" y="405" text-anchor="middle" font-weight="bold">MySQL (StatefulSet)</text>
-  <text x="560" y="425" text-anchor="middle" font-size="12">mysql-0 • PVC • Port 3306</text>
+  <!-- Flèches LoadBalancer → Pods -->
+  <line x1="450" y1="250" x2="250" y2="300" stroke="#333333" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="450" y1="250" x2="650" y2="300" stroke="#333333" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="350" y="270" text-anchor="middle" fill="#666666" font-size="10">Load Balancing</text>
 
-  <!-- Flèche PetClinic → MySQL -->
-  <line x1="560" y1="350" x2="560" y2="380" stroke="#333" marker-end="url(#arrow)"/>
-  <text x="575" y="365" text-anchor="start" font-size="12" fill="#555">JDBC</text>
+  <!-- Amazon ECR -->
+  <rect x="110" y="450" width="150" height="60" rx="8" fill="#ffb300" stroke="#e53935" stroke-width="1.5"/>
+  <text x="185" y="475" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">Amazon ECR</text>
+  <text x="185" y="490" text-anchor="middle" fill="#ffffff" font-size="10">petclinic:1.0</text>
 
-  <!-- Secrets & ConfigMap -->
-  <rect x="740" y="270" width="120" height="190" rx="8" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="1.5"/>
-  <text x="800" y="295" text-anchor="middle" font-weight="bold">Config</text>
-  <rect x="750" y="310" width="100" height="30" rx="5" fill="#e1bee7"/>
-  <text x="800" y="330" text-anchor="middle" font-size="11">Secret</text>
-  <text x="800" y="345" text-anchor="middle" font-size="10">• MYSQL_USER</text>
-  <text x="800" y="360" text-anchor="middle" font-size="10">• MYSQL_PASSWORD</text>
-  <rect x="750" y="380" width="100" height="30" rx="5" fill="#e1bee7"/>
-  <text x="800" y="400" text-anchor="middle" font-size="11">ConfigMap</text>
-  <text x="800" y="415" text-anchor="middle" font-size="10">• DB URL</text>
+<!-- ConfigMap & Secret -->
+  <rect x="650" y="400" width="100" height="60" rx="8" fill="#ffcc80" stroke="#fb8c00" stroke-width="1.5"/>
+  <text x="700" y="425" text-anchor="middle" fill="#333333" font-size="11" font-weight="bold">ConfigMap</text>
+  <text x="700" y="440" text-anchor="middle" fill="#333333" font-size="10">• APP_CONFIG</text>
 
-  <!-- Flèches vers Secrets -->
-  <line x1="720" y1="310" x2="740" y2="325" stroke="#7b1fa2" stroke-dasharray="3,3"/>
-  <line x1="720" y1="400" x2="740" y2="395" stroke="#7b1fa2" stroke-dasharray="3,3"/>
+  <rect x="650" y="470" width="100" height="60" rx="8" fill="#ffcdd2" stroke="#e53935" stroke-width="1.5"/>
+  <text x="700" y="495" text-anchor="middle" fill="#333333" font-size="11" font-weight="bold">Secret</text>
+  <text x="700" y="510" text-anchor="middle" fill="#333333" font-size="10">• MYSQL_USER</text>
+
+  <!-- Flèche ConfigMap & Secret → Pods -->
+  <line x1="650" y1="500" x2="250" y2="380" stroke="#333333" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrow)"/>
+  <line x1="710" y1="400" x2="650" y2="380" stroke="#333333" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrow)"/>
+
+  <!-- Flèche ECR → Pods -->
+  <line x1="175" y1="450" x2="250" y2="380" stroke="#333333" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrow)"/>
+  <line x1="175" y1="450" x2="650" y2="380" stroke="#333333" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrow)"/>
+  
+  <!-- Service MySQL -->
+  <rect x="350" y="480" width="200" height="50" rx="8" fill="#66bb6a" stroke="#2e7d32" stroke-width="2"/>
+  <text x="450" y="505" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">Service MySQL</text>
+  <text x="450" y="520" text-anchor="middle" fill="#ffffff" font-size="10">ClusterIP: mysql:3306</text>
+
+  <!-- Flèches Pods → MySQL -->
+  <line x1="250" y1="380" x2="450" y2="480" stroke="#333333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="650" y1="380" x2="450" y2="480" stroke="#333333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="350" y="440" text-anchor="middle" fill="#666666" font-size="10">SQL Queries</text>
+  <text x="550" y="440" text-anchor="middle" fill="#666666" font-size="10">SQL Queries</text>
+  
+  
+
+  <!-- Pod MySQL -->
+  <rect x="350" y="550" width="200" height="60" rx="8" fill="#9575cd" stroke="#673ab7" stroke-width="2"/>
+  <text x="450" y="570" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="bold">Pod: MySQL</text>
+  <text x="450" y="585" text-anchor="middle" fill="#ffffff" font-size="12">StatefulSet</text>
+  <text x="450" y="600" text-anchor="middle" fill="#ffffff" font-size="10">Port: 3306</text>
+
+  <!-- Flèche Service → Pod MySQL -->
+  <line x1="450" y1="530" x2="450" y2="550" stroke="#333333" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Amazon EBS (via CSI Driver) -->
+  <rect x="570" y="550" width="180" height="60" rx="8" fill="#4caf50" stroke="#2e7d32" stroke-width="2"/>
+  <text x="660" y="570" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">Amazon EBS</text>
+  <text x="660" y="585" text-anchor="middle" fill="#ffffff" font-size="10">gp2 • 5Gi • RWO</text>
+  <text x="660" y="600" text-anchor="middle" fill="#ffffff" font-size="10">via CSI Driver</text>
+
+  <!-- Flèche MySQL → EBS -->
+  <line x1="550" y1="580" x2="570" y2="580" stroke="#333333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="560" y="570" text-anchor="middle" fill="#666666" font-size="10">Mount</text>
+
+  <!-- Légende -->
+  <rect x="150" y="670" width="600" height="60" rx="10" fill="#f5f5f5" stroke="#cccccc" stroke-width="1"/>
+  <text x="160" y="685" fill="#333333" font-size="12" font-weight="bold">Légende:</text>
+  <rect x="160" y="700" width="20" height="10" fill="#ff6b6b" stroke="#d32f2f" stroke-width="1"/>
+  <text x="185" y="708" fill="#333333" font-size="10">Application</text>
+  <rect x="250" y="700" width="20" height="10" fill="#9575cd" stroke="#673ab7" stroke-width="1"/>
+  <text x="275" y="708" fill="#333333" font-size="10">Base de données</text>
+  <rect x="355" y="700" width="20" height="10" fill="#66bb6a" stroke="#2e7d32" stroke-width="1"/>
+  <text x="380" y="708" fill="#333333" font-size="10">Service K8s / Load Balancer</text>
+  <rect x="510" y="700" width="20" height="10" fill="#ffb300" stroke="#e53935" stroke-width="1"/>
+  <text x="535" y="708" fill="#333333" font-size="10">Amazon ECR</text>
+  <rect x="620" y="700" width="20" height="10" fill="#4caf50" stroke="#2e7d32" stroke-width="1"/>
+  <text x="645" y="708" fill="#333333" font-size="10">Amazon EBS</text>
 
   <!-- Définition de la flèche -->
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+      <path d="M0,0 L0,6 L9,3 z" fill="#333333" />
     </marker>
   </defs>
 </svg>

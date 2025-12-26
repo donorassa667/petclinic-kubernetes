@@ -1,40 +1,51 @@
-# Spring PetClinic sur Kubernetes
+# Spring PetClinic sur Kubernetes (AWS EKS)
 
-Ce projet déploie l'application [Spring PetClinic](https://github.com/spring-projects/spring-petclinic) sur un cluster Kubernetes local (**Minikube**) hébergé sur une instance **AWS EC2**.
+Ce projet déploie l'application [Spring PetClinic](https://github.com/spring-projects/spring-petclinic) sur un **cluster Kubernetes managé : AWS EKS**, avec stockage persistant, autoscaling et accès public via Load Balancer.
+
+> 🚀 **Migration réussie depuis Minikube vers AWS EKS (production-ready)**
+> 💡 **Version Minikube archivée**  
+> La version précédente avec Minikube est conservée dans la branche [`minikube-final`](https://github.com/votre-nom/petclinic-kubernetes/tree/minikube-final).
+---
+
+## 🧱 Architecture & fonctionnalités
 
 L’architecture inclut :
 
-* Une base de données **MySQL persistante**
-* Un déploiement applicatif **Spring Boot**
-* Un **autoscaling** via HPA (Horizontal Pod Autoscaler)
-* Un accès externe via **NodePort** et **Ingress**
-* Des **scripts d’automatisation** pour le build et le déploiement
+- 🗄️ **MySQL persistant** via **Amazon EBS (CSI Driver)**
+- 🐳 Application **Spring Boot** packagée en Docker et stockée sur **Amazon ECR**
+- 📈 **Autoscaling horizontal (HPA)**
+- 🌐 Accès externe via **AWS Load Balancer** (Ingress Nginx)
+- ⚙️ **Scripts d’automatisation** pour le déploiement et le nettoyage EKS
 
-Ce projet a pour but de démontrer la maîtrise des concepts fondamentaux de **Docker**, **Kubernetes** et du déploiement applicatif sur le cloud.
+Ce projet démontre une **maîtrise avancée** de :
+
+> Docker · Kubernetes · AWS · EKS · IAM · ECR · CSI Driver · Cloud-Native Architecture
 
 ---
 
 ## 🔧 Prérequis nécessaires
 
-### Infrastructure
+### ☁️ Infrastructure AWS
 
-* **Instance AWS EC2** (type `c7i-flex.large` ou supérieur recommandé)
+- Compte AWS avec crédits (ex : **95 $ gratuits**)
+- **Clé SSH AWS** existante  
+  `docker-host-m1resi-kp`
+- **Utilisateur IAM** avec permissions suffisantes  
+  👉 `AdministratorAccess` **temporaire recommandé**
 
-  * Ubuntu 22.04
-  * Ports ouverts dans le Security Group :
+---
 
-    * `22/TCP` (SSH)
-    * `8080/TCP` (NodePort)
-    * `80/TCP` (Ingress)
+### 🛠️ Outils requis (local ou EC2 de gestion)
 
-### Logiciels installés sur l’EC2
+- AWS CLI
+- `eksctl`
+- `kubectl`
+- `helm`
+- Docker
+- Git
 
-* Docker
-* Minikube
-* kubectl
-* Git
-
-> ⚠️ L’application est conçue pour fonctionner sur **Minikube** (cluster Kubernetes local) et non sur un cluster managé comme EKS.
+> ⚠️ **Minikube n’est plus requis**  
+> Ce projet est conçu pour **AWS EKS en environnement réel**
 
 ---
 
@@ -45,119 +56,102 @@ Ce projet a pour but de démontrer la maîtrise des concepts fondamentaux de **D
 ```bash
 git clone https://github.com/votre-nom/petclinic-kubernetes.git
 cd petclinic-kubernetes
-```
 
----
+2️⃣ Déployer automatiquement sur AWS EKS
+chmod +x scripts/deploy-eks.sh
+./scripts/deploy-eks.sh
 
-### 2️⃣ Démarrer Minikube
+🔄 Le script effectue automatiquement :
 
-```bash
-minikube start --driver=docker --ports=8080:30080
-minikube addons enable ingress
-minikube addons enable metrics-server
-```
+Création du cluster EKS (c7i-flex.large)
 
----
+Installation du CSI Driver Amazon EBS
 
-### 3️⃣ Déployer l’application
+Build & push de l’image Docker vers Amazon ECR
 
-```bash
-./scripts/deploy.sh
-```
+Déploiement de MySQL (PVC + StatefulSet)
 
-Le script `deploy.sh` effectue automatiquement :
+Déploiement de Spring PetClinic
 
-* La construction de l’image Docker dans Minikube
-* Le déploiement de MySQL (StatefulSet + PVC)
-* Le déploiement de PetClinic (Deployment)
-* La création des Services et de l’Ingress
+Installation de Ingress Nginx
 
----
+Exposition via AWS Load Balancer
 
-### 4️⃣ Accès à l’application
+3️⃣ Accès à l’application
 
-1. Récupérer l’IP publique de l’instance EC2 (exemple : `51.21.201.212`)
-2. Ajouter l’entrée suivante dans le fichier hosts de votre machine locale :
+À la fin du script, une URL de type est affichée :
 
-**Linux / macOS** : `/etc/hosts`
+http://a1b2c3d4e5f6.elb.eu-north-1.amazonaws.com
 
-**Windows** : `C:\Windows\System32\drivers\etc\hosts`
 
-```
-51.21.201.212 petclinic.local
-```
+👉 Copiez directement l’URL dans votre navigateur
+👉 Aucune modification du fichier /etc/hosts n’est nécessaire
 
-3. Ouvrir le navigateur et accéder à :
+🧪 Commandes de vérification
+| Objectif           | Commande                                               |
+| ------------------ | ------------------------------------------------------ |
+| Voir les pods      | `kubectl get pods -n petclinic`                        |
+| Voir les logs      | `kubectl logs -l app=petclinic -n petclinic --tail=50` |
+| Vérifier l’Ingress | `kubectl get ingress -n petclinic`                     |
+| Vérifier le HPA    | `kubectl get hpa -n petclinic`                         |
+| Voir les métriques | `kubectl top pods -n petclinic`                        |
 
-```
-http://petclinic.local
-```
+📁 Structure du projet
 
----
-
-## 🧪 Commandes de vérification importantes
-
-| Objectif                       | Commande                                               |
-| ------------------------------ | ------------------------------------------------------ |
-| Voir l’état des pods           | `kubectl get pods -n petclinic`                        |
-| Voir les logs de l’application | `kubectl logs -l app=petclinic -n petclinic --tail=50` |
-| Vérifier l’Ingress             | `kubectl get ingress -n petclinic`                     |
-| Vérifier l’HPA                 | `kubectl get hpa -n petclinic`                         |
-| Consulter les métriques        | `kubectl top pods -n petclinic`                        |
-| Accéder au dashboard           | `minikube dashboard`                                   |
-| Reconstruire l’image           | `./scripts/build.sh`                                   |
-
----
-
-## 📁 Structure du projet
-
-```
 petclinic-kubernetes/
 ├── README.md
 ├── docker/
-│ └── Dockerfile
+│   └── Dockerfile
 ├── docs/
-│ ├── architecture.md
-│ ├── architecture.svg
-│ ├── deployment-guide.md
-│ └── screenshots/
-│ ├── app-running.png
-│ ├── monitoring-pods.png
-│ ├── monitoring-workload-status.png
-│ └── pods-list.png
+│   ├── architecture.md
+│   ├── architecture.svg
+│   ├── deployment-guide.md
+│   └── screenshots/
 ├── kubernetes/
-│ ├── namespace.yaml
-│ ├── ingress/
-│ │ └── petclinic-ingress.yaml
-│ ├── mysql/
-│ │ ├── mysql-pvc.yaml
-│ │ ├── mysql-secret.yaml
-│ │ ├── mysql-service.yaml
-│ │ └── mysql-statefulset.yaml
-│ └── petclinic/
-│ ├── petclinic-configmap.yaml
-│ ├── petclinic-deployment.yaml
-│ ├── petclinic-hpa.yaml
-│ └── petclinic-service.yaml
+│   ├── namespace.yaml
+│   ├── ingress/
+│   │   └── petclinic-ingress.yaml
+│   ├── mysql/
+│   │   ├── mysql-pvc.yaml
+│   │   ├── mysql-secret.yaml
+│   │   ├── mysql-service.yaml
+│   │   └── mysql-statefulset.yaml
+│   └── petclinic/
+│       ├── petclinic-configmap.yaml
+│       ├── petclinic-deployment.yaml
+│       ├── petclinic-hpa.yaml
+│       └── petclinic-service.yaml
 ├── scripts/
-│ ├── build.sh
-│ ├── cleanup.sh
-│ ├── deploy.sh
-│ └── restart-minikube.sh
-```
+│   ├── deploy-eks.sh     # ✅ Déploiement EKS
+│   └── cleanup-eks.sh    # ✅ Nettoyage EKS
 
----
+🏆 Défis techniques surmontés
 
-## ✅ Validation du projet
+❌ Permissions IAM insuffisantes
+→ Résolu via AdministratorAccess temporaire
 
-* Tous les pods sont en état **Running**
-* L’application est accessible via navigateur
-* Les données persistent après redémarrage du pod MySQL
-* Les pods applicatifs sont automatiquement recréés
-* Les métriques sont consultables via Metrics Server
+❌ Stockage persistant non fonctionnel
+→ Installation du CSI Driver Amazon EBS
 
----
+❌ PVC gp3 non reconnu
+→ Basculement vers gp2 (support natif)
 
-## 🎯 Conclusion
+❌ Ingress sans adresse ELB
+→ Déploiement manuel de ingress-nginx
 
-Ce projet présente un déploiement Kubernetes complet et réaliste d’une application Spring Boot, intégrant persistance, haute disponibilité, autoscaling, monitoring et documentation. Il constitue une base solide pour évoluer vers un environnement de production (Helm, CI/CD, EKS).
+❌ Accès via host non fonctionnel
+→ Suppression de host: petclinic.local → accès direct ELB
+
+🎯 Conclusion
+
+Ce projet est désormais 100 % cloud-native, déployé sur AWS EKS selon les bonnes pratiques DevOps.
+
+Il constitue une base solide et évolutive pour :
+
+🔁 CI/CD (GitHub Actions + EKS)
+
+📊 Monitoring (CloudWatch Container Insights)
+
+🔐 Sécurité avancée (IRSA, IAM fin)
+
+💰 Optimisation des coûts (arrêt / destruction du cluster)

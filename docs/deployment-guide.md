@@ -1,243 +1,78 @@
-# Guide de déploiement – Spring PetClinic sur Kubernetes
+# Guide de déploiement – Spring PetClinic sur AWS EKS
 
-Ce document décrit **pas à pas** comment déployer l’application **Spring PetClinic** sur un cluster Kubernetes local (Minikube) hébergé sur une instance **AWS EC2**. En suivant ce guide, toute personne disposant des prérequis pourra reproduire exactement le déploiement.
-
----
-
-## 1. Préparation de l’environnement
-
-### 1.1 Créer et accéder à l’instance EC2
-
-* Lancer une instance EC2 Ubuntu 22.04
-* Type recommandé : `c7i-flex.large` ou supérieur
-* Ouvrir les ports suivants dans le Security Group :
-
-  * `22/TCP` (SSH)
-  * `8080/TCP` (NodePort)
-  * `80/TCP` (Ingress)
-
-Connexion SSH :
-
-```bash
-ssh ubuntu@<IP_PUBLIQUE_EC2>
-```
+Ce guide décrit **pas à pas** le déploiement sur **AWS EKS** (remplace Minikube).
 
 ---
 
-### 1.2 Installer Docker
+## 1. Préparation AWS
 
+### 1.1 Permissions IAM
+Accorder temporairement **`AdministratorAccess`** à l’utilisateur `kals`.
+
+### 1.2 Clé SSH
+Assurez-vous que la clé **`docker-host-m1resi-kp`** existe dans EC2 → Key Pairs.
+
+---
+
+## 2. Préparation de la machine de gestion
+
+> Peut être une instance EC2 ou ta machine locale (avec AWS CLI configuré)
+
+### 2.1 Installer les outils
 ```bash
-sudo apt update
+# AWS CLI, eksctl, kubectl, helm, docker
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+sudo unzip awscliv2.zip && sudo ./aws/install
+
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
 sudo apt install -y docker.io
-sudo usermod -aG docker $USER
-newgrp docker
-```
+sudo usermod -aG docker $USER && newgrp docker
 
-Vérification :
+2.2 Configurer AWS CLI
+aws configure
+# AWS Access Key, Secret, région eu-north-1
 
-```bash
-docker version
-```
-
----
-
-### 1.3 Installer kubectl
-
-```bash
-curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-chmod +x kubectl
-sudo mv kubectl /usr/local/bin/
-```
-
-Vérification :
-
-```bash
-kubectl version --client
-```
-
----
-
-### 1.4 Installer Minikube
-
-```bash
-curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-sudo install minikube-linux-amd64 /usr/local/bin/minikube
-```
-
-Vérification :
-
-```bash
-minikube version
-```
-
----
-
-## 2. Récupération du projet
-
-Cloner le dépôt GitHub :
-
-```bash
+3. Déploiement
+3.1 Cloner le projet
 git clone https://github.com/votre-nom/petclinic-kubernetes.git
 cd petclinic-kubernetes
-```
 
----
+3.2 Lancer le script EKS
+chmod +x scripts/deploy-eks.sh
+./scripts/deploy-eks.sh
+  ⏱️ Temps estimé : 12–15 minutes
 
-## 3. Démarrage du cluster Kubernetes
+4. Validation
 
-Démarrer Minikube avec Docker comme driver :
+4.1 Accès à l’application
+Copier l’URL ELB affichée par le script
+Ouvrir dans le navigateur → PetClinic s’affiche
 
-```bash
-minikube start --driver=docker --ports=8080:30080
-```
+4.2 Vérifier les composants critiques
+kubectl get pvc -n petclinic          # STATUS = Bound
+kubectl get pods -n petclinic         # mysql-0 + petclinic-* = Running
+kubectl get ingress -n petclinic      # ADDRESS = ELB
 
-Activer les addons nécessaires :
+5. Défis rencontrés & solutions
 
-```bash
-minikube addons enable ingress
-minikube addons enable metrics-server
-```
+Problème                Cause                       Solution
+AccessDeniedException   Permissions IAM             Ajout de AdministratorAccess
+PVC Pending             CSI Driver manquant         Installation via Helm + rôle IAM
+gp3 non trouvé          StorageClass inexistant     Utilisation de gp2
+Ingress sans adresse    Contrôleur non déployé      kubectl apply -f ingress-nginx
+Erreur NXDOMAIN         Règle host dans Ingress     Suppression de host: petclinic.local
 
-Vérification :
+6. Nettoyage (économie de coûts)
+chmod +x scripts/cleanup-eks.sh
+./scripts/cleanup-eks.sh
+  💡 Conseil : arrêter l’instance EC2 au lieu de la supprimer pour garder le code.
 
-```bash
-kubectl get nodes
-```
-
----
-
-## 4. Déploiement automatisé
-
-Le projet inclut des scripts facilitant le déploiement.
-
-### 4.1 Lancer le script de déploiement
-
-```bash
-chmod +x scripts/*.sh
-./scripts/deploy.sh
-```
-
-Ce script effectue automatiquement :
-
-* La construction de l’image Docker PetClinic
-* La création du namespace Kubernetes
-* Le déploiement de MySQL (StatefulSet + PVC)
-* Le déploiement de PetClinic (Deployment)
-* La création des Services et de l’Ingress
-
----
-
-## 5. Vérification du déploiement
-
-### 5.1 Vérifier les pods
-
-```bash
-kubectl get pods -n petclinic
-```
-
-Tous les pods doivent être en état **Running**.
-
----
-
-### 5.2 Vérifier les services
-
-```bash
-kubectl get svc -n petclinic
-```
-
----
-
-### 5.3 Vérifier l’Ingress
-
-```bash
-kubectl get ingress -n petclinic
-```
-
----
-
-## 6. Accès à l’application
-
-### 6.1 Configuration du fichier hosts (machine locale)
-
-Ajouter l’entrée suivante :
-
-```text
-<IP_PUBLIQUE_EC2> petclinic.local
-```
-
-### 6.2 Accès via navigateur
-
-Ouvrir :
-
-```
-http://petclinic.local
-```
-
----
-
-## 7. Validation fonctionnelle
-
-### 7.1 Tester l’application
-
-* Accéder à l’interface web
-* Créer un propriétaire et un animal
-
----
-
-### 7.2 Tester la persistance des données
-
-Supprimer le pod MySQL :
-
-```bash
-kubectl delete pod mysql-0 -n petclinic
-```
-
-Après redémarrage, vérifier que les données sont toujours présentes.
-
----
-
-### 7.3 Tester la résilience
-
-Supprimer un pod applicatif :
-
-```bash
-kubectl delete pod -l app=petclinic -n petclinic
-```
-
-Kubernetes recrée automatiquement le pod.
-
----
-
-## 8. Monitoring et logs
-
-### 8.1 Consulter les métriques
-
-```bash
-kubectl top pods -n petclinic
-kubectl top nodes
-```
-
----
-
-### 8.2 Consulter les logs
-
-```bash
-kubectl logs -l app=petclinic -n petclinic --tail=50
-kubectl logs mysql-0 -n petclinic
-```
-
----
-
-## 9. Nettoyage de l’environnement
-
-Pour supprimer toutes les ressources déployées :
-
-```bash
-./scripts/cleanup.sh
-```
-
----
-
-## 10. Conclusion
-
-Ce guide permet de déployer intégralement l’application Spring PetClinic sur Kubernetes, avec persistance, haute disponibilité, autoscaling et monitoring. Il constitue une base réutilisable pour des projets DevOps ou des déploiements applicatifs plus avancés.
+7. Conclusion
+Ce guide permet de déployer PetClinic sur AWS EKS en production, avec persistance, scalabilité, et accès public. Il reflète une approche DevOps moderne et est directement applicable à des projets professionnels.

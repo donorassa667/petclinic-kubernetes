@@ -1,60 +1,54 @@
-# Architecture du déploiement PetClinic sur Kubernetes
+
+# Architecture du déploiement PetClinic sur AWS EKS
 
 ## 1. Diagramme d’architecture
 
-![Architecture du déploiement PetClinic](architecture.svg)
+![Architecture du déploiement PetClinic sur EKS](architecture.svg)
 
 
 ---
 
 ## 2. Justification des choix techniques
 
-### Docker
-Docker est utilisé pour packager l’application Spring Boot et garantir la portabilité de l’environnement d’exécution.
+### AWS EKS
+- Cluster Kubernetes **managé**, haute disponibilité, sans gestion du control plane
+- Intégration native avec IAM, EBS, CloudWatch
 
-### Kubernetes
-Kubernetes permet :
-- Le déploiement automatisé
-- La gestion des réplicas
-- La résilience (self-healing)
-- La montée en charge
+### Amazon ECR
+- Registre d’images Docker **sécurisé**, privé, intégré à IAM
+- Authentification via `aws ecr get-login-password`
 
-### Deployment pour PetClinic
-L’application PetClinic est stateless, ce qui justifie l’utilisation d’un **Deployment** avec plusieurs réplicas.
+### Amazon EBS (via CSI Driver)
+- Stockage **persistant et fiable** pour MySQL
+- Classe `gp2` : équilibre perf/prix, disponible par défaut
 
-### StatefulSet pour MySQL
-MySQL nécessite :
-- Une identité réseau stable
-- Une persistance des données
-
-Le **StatefulSet** est donc le choix approprié.
-
-### PersistentVolumeClaim
-Le PVC permet de conserver les données même en cas de redémarrage du pod MySQL.
-
-### Service NodePort
-Le service NodePort permet un accès simple à l’application depuis l’extérieur sans Ingress.
+### Ingress Nginx + AWS Load Balancer
+- Exposition publique via **Classic Load Balancer** géré par AWS
+- Pas de dépendance à un hostname local → accès direct par URL ELB
 
 ---
 
-## 3. Description des composants Kubernetes
+## 3. Description des composants
 
-### Namespace
-Permet d’isoler les ressources liées au projet PetClinic.
+### Cluster EKS
+- Version 1.30
+- 2 nœuds `c7i-flex.large` (2 vCPU, 4 GiB RAM)
+- Autoscaling activé (1–3 nœuds)
 
-### Deployment (PetClinic)
-- Gère les pods applicatifs
-- Assure la haute disponibilité
-- Redémarre automatiquement les pods en cas de panne
+### CSI Driver EBS
+- Composant obligatoire pour provisionner des volumes EBS depuis Kubernetes
+- Rôle IAM dédié avec politique `AmazonEBSCSIDriverPolicy`
 
-### StatefulSet (MySQL)
-- Gère la base de données
-- Assure la persistance et la stabilité réseau
+### ECR Repository
+- Image : `469860694516.dkr.ecr.eu-north-1.amazonaws.com/petclinic:1.0`
 
-### Services
-- **ClusterIP** : communication interne
-- **NodePort** : exposition externe de l’application
+### Manifests modifiés pour EKS
+| Fichier | Modification |
+|--------|-------------|
+| `mysql-pvc.yaml` | `storageClassName: gp2` (au lieu de `standard`) |
+| `petclinic-deployment.yaml` | `image` = URL ECR + `imagePullPolicy: Always` |
+| `petclinic-ingress.yaml` | Suppression de `host: petclinic.local` pour accès public |
 
-### ConfigMap et Secret
-- ConfigMap : paramètres applicatifs
-- Secret : identifiants MySQL
+### Monitoring (bonus)
+- **CloudWatch Container Insights** : métriques CPU/mémoire
+- **Logs centralisés** dans CloudWatch Logs
