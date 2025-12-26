@@ -77,7 +77,7 @@ minikube version
 Cloner le dépôt GitHub :
 
 ```bash
-git clone https://github.com/donorassa667/petclinic-kubernetes.git
+git clone --branch minikube-final --single-branch https://github.com/donorassa667/petclinic-kubernetes.git
 cd petclinic-kubernetes
 ```
 
