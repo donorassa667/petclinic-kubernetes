@@ -43,7 +43,7 @@ Ce projet a pour but de démontrer la maîtrise des concepts fondamentaux de **D
 ### 1️⃣ Cloner le projet
 
 ```bash
-git clone https://github.com/donorassa667/petclinic-kubernetes.git
+git clone --branch minikube-final --single-branch https://github.com/donorassa667/petclinic-kubernetes.git
 cd petclinic-kubernetes
 ```
 
