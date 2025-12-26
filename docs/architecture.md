@@ -49,6 +49,6 @@
 | `petclinic-deployment.yaml` | `image` = URL ECR + `imagePullPolicy: Always` |
 | `petclinic-ingress.yaml` | Suppression de `host: petclinic.local` pour accès public |
 
-### Monitoring (bonus)
+### Monitoring
 - **CloudWatch Container Insights** : métriques CPU/mémoire
 - **Logs centralisés** dans CloudWatch Logs

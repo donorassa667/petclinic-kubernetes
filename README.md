@@ -3,23 +3,26 @@
 Ce projet déploie l'application [Spring PetClinic](https://github.com/spring-projects/spring-petclinic) sur un **cluster Kubernetes managé : AWS EKS**, avec stockage persistant, autoscaling et accès public via Load Balancer.
 
 > 🚀 **Migration réussie depuis Minikube vers AWS EKS (production-ready)**
-> 💡 **Version Minikube archivée**  
-> La version précédente avec Minikube est conservée dans la branche [`minikube-final`](https://github.com/votre-nom/petclinic-kubernetes/tree/minikube-final).
+
+> 💡 **Version Minikube archivée**
+> La version précédente avec Minikube est conservée dans la branche
+> 👉 `minikube-final`
+
 ---
 
 ## 🧱 Architecture & fonctionnalités
 
 L’architecture inclut :
 
-- 🗄️ **MySQL persistant** via **Amazon EBS (CSI Driver)**
-- 🐳 Application **Spring Boot** packagée en Docker et stockée sur **Amazon ECR**
-- 📈 **Autoscaling horizontal (HPA)**
-- 🌐 Accès externe via **AWS Load Balancer** (Ingress Nginx)
-- ⚙️ **Scripts d’automatisation** pour le déploiement et le nettoyage EKS
+* 🗄️ **MySQL persistant** via **Amazon EBS (CSI Driver)**
+* 🐳 Application **Spring Boot** packagée en Docker et stockée sur **Amazon ECR**
+* 📈 **Autoscaling horizontal (HPA)**
+* 🌐 Accès externe via **AWS Load Balancer** (Ingress Nginx)
+* ⚙️ **Scripts d’automatisation** pour le déploiement et le nettoyage EKS
 
-Ce projet démontre une **maîtrise avancée** de :
+Ce projet permet une **maîtrise avancée** de :
 
-> Docker · Kubernetes · AWS · EKS · IAM · ECR · CSI Driver · Cloud-Native Architecture
+Docker · Kubernetes · AWS · EKS · IAM · ECR · CSI Driver · Cloud-Native Architecture
 
 ---
 
@@ -27,24 +30,23 @@ Ce projet démontre une **maîtrise avancée** de :
 
 ### ☁️ Infrastructure AWS
 
-- Compte AWS avec crédits (ex : **95 $ gratuits**)
-- **Clé SSH AWS** existante  
-  `docker-host-m1resi-kp`
-- **Utilisateur IAM** avec permissions suffisantes  
+* Compte AWS avec crédits (ex : **95 $ gratuits**)
+* **Clé SSH AWS** existante : `docker-host-m1resi-*`
+* **Utilisateur IAM** avec permissions suffisantes
   👉 `AdministratorAccess` **temporaire recommandé**
 
 ---
 
 ### 🛠️ Outils requis (local ou EC2 de gestion)
 
-- AWS CLI
-- `eksctl`
-- `kubectl`
-- `helm`
-- Docker
-- Git
+* AWS CLI
+* eksctl
+* kubectl
+* helm
+* Docker
+* Git
 
-> ⚠️ **Minikube n’est plus requis**  
+> ⚠️ **Minikube n’est plus requis**
 > Ce projet est conçu pour **AWS EKS en environnement réel**
 
 ---
@@ -56,38 +58,44 @@ Ce projet démontre une **maîtrise avancée** de :
 ```bash
 git clone https://github.com/votre-nom/petclinic-kubernetes.git
 cd petclinic-kubernetes
+```
 
-2️⃣ Déployer automatiquement sur AWS EKS
+---
+
+### 2️⃣ Déployer automatiquement sur AWS EKS
+
+```bash
 chmod +x scripts/deploy-eks.sh
 ./scripts/deploy-eks.sh
+```
 
-🔄 Le script effectue automatiquement :
+Le script effectue automatiquement :
 
-Création du cluster EKS (c7i-flex.large)
+* Création du cluster **EKS**
+* Installation du **CSI Driver Amazon EBS**
+* Build & push de l’image Docker vers **Amazon ECR**
+* Déploiement de **MySQL** (PVC + StatefulSet)
+* Déploiement de **Spring PetClinic**
+* Installation de **Ingress Nginx**
+* Exposition via **AWS Load Balancer**
 
-Installation du CSI Driver Amazon EBS
+---
 
-Build & push de l’image Docker vers Amazon ECR
-
-Déploiement de MySQL (PVC + StatefulSet)
-
-Déploiement de Spring PetClinic
-
-Installation de Ingress Nginx
-
-Exposition via AWS Load Balancer
-
-3️⃣ Accès à l’application
+### 3️⃣ Accès à l’application
 
 À la fin du script, une URL de type est affichée :
 
-http://a1b2c3d4e5f6.elb.eu-north-1.amazonaws.com
-
+```
+http://xxxxxxxx.elb.<region>.amazonaws.com
+```
 
 👉 Copiez directement l’URL dans votre navigateur
-👉 Aucune modification du fichier /etc/hosts n’est nécessaire
+👉 **Aucune modification du fichier `/etc/hosts` n’est nécessaire**
 
-🧪 Commandes de vérification
+---
+
+## 🧪 Commandes de vérification
+
 | Objectif           | Commande                                               |
 | ------------------ | ------------------------------------------------------ |
 | Voir les pods      | `kubectl get pods -n petclinic`                        |
@@ -96,8 +104,11 @@ http://a1b2c3d4e5f6.elb.eu-north-1.amazonaws.com
 | Vérifier le HPA    | `kubectl get hpa -n petclinic`                         |
 | Voir les métriques | `kubectl top pods -n petclinic`                        |
 
-📁 Structure du projet
+---
 
+## 📁 Structure du projet
+
+```text
 petclinic-kubernetes/
 ├── README.md
 ├── docker/
@@ -122,36 +133,29 @@ petclinic-kubernetes/
 │       ├── petclinic-hpa.yaml
 │       └── petclinic-service.yaml
 ├── scripts/
-│   ├── deploy-eks.sh     # ✅ Déploiement EKS
-│   └── cleanup-eks.sh    # ✅ Nettoyage EKS
+│   ├── deploy-eks.sh
+│   └── cleanup-eks.sh
+```
 
-🏆 Défis techniques surmontés
+---
 
-❌ Permissions IAM insuffisantes
-→ Résolu via AdministratorAccess temporaire
+## 🏆 Défis techniques surmontés
 
-❌ Stockage persistant non fonctionnel
-→ Installation du CSI Driver Amazon EBS
+* Permissions IAM insuffisantes → **AdministratorAccess temporaire**
+* Stockage persistant non fonctionnel → **CSI Driver Amazon EBS**
+* PVC gp3 non reconnu → **basculement vers gp2**
+* Ingress sans adresse ELB → **installation ingress-nginx**
+* Accès via host local → **accès direct via ELB**
 
-❌ PVC gp3 non reconnu
-→ Basculement vers gp2 (support natif)
+---
 
-❌ Ingress sans adresse ELB
-→ Déploiement manuel de ingress-nginx
+## 🎯 Conclusion
 
-❌ Accès via host non fonctionnel
-→ Suppression de host: petclinic.local → accès direct ELB
+Ce projet est désormais **100 % cloud-native**, déployé sur **AWS EKS** selon les bonnes pratiques DevOps.
 
-🎯 Conclusion
+Il constitue une base solide pour :
 
-Ce projet est désormais 100 % cloud-native, déployé sur AWS EKS selon les bonnes pratiques DevOps.
-
-Il constitue une base solide et évolutive pour :
-
-🔁 CI/CD (GitHub Actions + EKS)
-
-📊 Monitoring (CloudWatch Container Insights)
-
-🔐 Sécurité avancée (IRSA, IAM fin)
-
-💰 Optimisation des coûts (arrêt / destruction du cluster)
+* CI/CD (GitHub Actions + EKS)
+* Monitoring (CloudWatch Container Insights)
+* Sécurité avancée (IRSA, IAM)
+* Optimisation des coûts (arrêt / destruction du cluster)
