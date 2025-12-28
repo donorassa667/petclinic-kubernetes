@@ -65,13 +65,6 @@ else
   echo "ℹ️  Aucun provider OIDC à supprimer"
 fi
 
-# === 5. NETTOYER LES RESSOURCES KUBERNETES (si cluster encore actif) ===
-echo "🗑️  Nettoyage des ressources Kubernetes (monitoring)..."
-kubectl delete namespace amazon-cloudwatch 2>/dev/null || true
-
-# === 6. NETTOYER LES FICHIERS LOCAUX ===
-rm -f cwagent-fluentd-quickstart.yaml trust-policy.json
-
 echo ""
 echo "✅ Nettoyage terminé !"
 echo "💡 Coût estimé à partir de maintenant : ~\$0/jour"

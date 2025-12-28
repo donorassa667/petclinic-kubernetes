@@ -49,6 +49,14 @@
 | `petclinic-deployment.yaml` | `image` = URL ECR + `imagePullPolicy: Always` |
 | `petclinic-ingress.yaml` | Suppression de `host: petclinic.local` pour accès public |
 
-### Monitoring
-- **CloudWatch Container Insights** : métriques CPU/mémoire
-- **Logs centralisés** dans CloudWatch Logs
+## Évolutions récentes de l’architecture
+
+- Mise à jour du cluster vers **Kubernetes 1.32**
+- Conservation du stockage persistant via **Amazon EBS CSI Driver**
+- Architecture recentrée sur :
+  - EKS managé
+  - Ingress Nginx
+  - MySQL StatefulSet
+  - HPA
+
+Cette évolution améliore la stabilité globale et la maintenabilité.

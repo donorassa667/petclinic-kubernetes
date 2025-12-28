@@ -139,6 +139,25 @@ petclinic-kubernetes/
 
 ---
 
+## 🔄 Mise à jour du cluster EKS (Kubernetes v1.32)
+
+Le cluster **petclinic-prod** a été mis à jour vers **Kubernetes v1.32**, la version la plus récente supportée par AWS EKS.
+
+### Éléments vérifiés après mise à jour
+
+- ✅ Nœuds EKS opérationnels
+- ✅ Node Group managé fonctionnel
+- ✅ CSI Driver Amazon EBS actif
+- ✅ Ingress Nginx fonctionnel
+- ✅ Application et base de données stables
+
+```bash
+kubectl get nodes
+kubectl get pods -n kube-system
+kubectl get pods -n petclinic
+
+---
+
 ## 🏆 Défis techniques surmontés
 
 * Permissions IAM insuffisantes → **AdministratorAccess temporaire**
@@ -156,6 +175,5 @@ Ce projet est désormais **100 % cloud-native**, déployé sur **AWS EKS** selon
 Il constitue une base solide pour :
 
 * CI/CD (GitHub Actions + EKS)
-* Monitoring (CloudWatch Container Insights)
 * Sécurité avancée (IRSA, IAM)
 * Optimisation des coûts (arrêt / destruction du cluster)

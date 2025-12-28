@@ -133,7 +133,18 @@ kubectl get pvc -n petclinic          # STATUS = Bound
 kubectl get pods -n petclinic         # mysql-0 + petclinic-* = Running
 kubectl get ingress -n petclinic      # ADDRESS = ELB
 ```
+---
 
+## 🔄 Mise à jour Kubernetes vers la version 1.32
+
+Après le déploiement initial, le cluster EKS a été mis à jour vers **Kubernetes 1.32**.
+
+### Vérifications post-mise à jour
+
+```bash
+kubectl get nodes
+eksctl get nodegroup --cluster petclinic-prod
+kubectl get pods -n kube-system
 ---
 
 ## 5️⃣ Défis rencontrés & solutions
