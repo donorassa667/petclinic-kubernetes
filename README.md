@@ -155,7 +155,7 @@ Le cluster **petclinic-prod** a été mis à jour vers **Kubernetes v1.32**, la 
 kubectl get nodes
 kubectl get pods -n kube-system
 kubectl get pods -n petclinic
-
+```
 ---
 
 ## 🏆 Défis techniques surmontés

@@ -145,6 +145,7 @@ Après le déploiement initial, le cluster EKS a été mis à jour vers **Kubern
 kubectl get nodes
 eksctl get nodegroup --cluster petclinic-prod
 kubectl get pods -n kube-system
+```
 ---
 
 ## 5️⃣ Défis rencontrés & solutions
