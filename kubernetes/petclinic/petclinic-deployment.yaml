@@ -20,6 +20,8 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
+              protocol: TCP
+              name: http
           env:
             # Injection explicite des credentials MySQL (REQUIS pour Spring Boot)
             - name: SPRING_DATASOURCE_USERNAME

@@ -1,32 +1,36 @@
 # ============================
-# Stage 1: Build the application
+# Stage 1: Build
 # ============================
 FROM maven:3.9.6-eclipse-temurin-17 AS build
-
 WORKDIR /build
-
-# Copier uniquement les fichiers nécessaires au build
 COPY spring-petclinic/pom.xml .
 COPY spring-petclinic/src ./src
-
-# Build du JAR
 RUN mvn clean package -DskipTests
-
 
 # ============================
 # Stage 2: Runtime
 # ============================
 FROM eclipse-temurin:17-jre
-
 WORKDIR /app
 
-# Sécurité : utilisateur non-root
-RUN useradd -m spring
-USER spring
-
-# Copier le JAR depuis le stage build
 COPY --from=build /build/target/*.jar app.jar
+
+# Agent compatible
+RUN curl -L -o opentelemetry-javaagent.jar https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.9.0/opentelemetry-javaagent.jar
+
+RUN useradd -m spring && chown spring:spring /app/*
+USER spring
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Lancer avec OpenTelemetry — DÉSACTIVER Spring Web
+ENTRYPOINT ["java", "-javaagent:/app/opentelemetry-javaagent.jar", \
+  "-Dotel.service.name=petclinic", \
+  "-Dotel.traces.exporter=otlp", \
+  "-Dotel.metrics.exporter=none", \
+  "-Dotel.logs.exporter=none", \
+  "-Dotel.exporter.otlp.endpoint=http://otel-collector.monitoring.svc.cluster.local:4318", \
+  "-Dotel.instrumentation.spring-web.enabled=false", \
+  "-Dotel.instrumentation.spring-webmvc.enabled=false", \
+  "-Dotel.instrumentation.jdbc.enabled=true", \
+  "-jar", "app.jar"]

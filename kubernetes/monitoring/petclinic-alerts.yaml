@@ -1,0 +1,38 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: petclinic-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+  - name: petclinic.rules
+    rules:
+
+    - alert: PetClinicHighCPU
+      expr: process_cpu_usage > 0.8
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "CPU élevé sur PetClinic"
+        description: "Utilisation CPU > 80% pendant 1 minute"
+
+    - alert: PetClinicHighMemory
+      expr: jvm_memory_used_bytes / jvm_memory_max_bytes > 0.8
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Mémoire JVM élevée"
+        description: "Utilisation mémoire JVM > 80%"
+
+    - alert: PetClinicDown
+      expr: up{namespace="petclinic"} == 0
+      for: 30s
+      labels:
+        severity: critical
+      annotations:
+        summary: "PetClinic indisponible"
+        description: "L'application PetClinic ne répond plus"
